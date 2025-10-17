@@ -1,264 +1,85 @@
 # LimaCharlie Migration Tools
 
-Various tools and guides to help with migrating to LimaCharlie.
+Guides and tools to help with migrating to LimaCharlie from other security platforms.
 
-## Rule Migration Toolkit
+## Overview
 
-Automatically convert security detection rules from various platforms (Splunk, Elastic, Sigma, CrowdStrike, Okta, etc.) into LimaCharlie Detection & Response (D&R) rules using AI-powered conversion.
+This repository provides resources to assist security teams in migrating their existing security infrastructure, detection rules, and workflows to the LimaCharlie platform. Whether you're migrating from a legacy SIEM, EDR solution, or identity provider, these tools are designed to streamline the transition process.
 
-## Quick Start
+## Available Migration Tools
 
-### 1. Install Dependencies
+### [Rule Conversion](./rule_conversion/)
 
+AI-powered toolkit for converting security detection rules from various platforms to LimaCharlie Detection & Response (D&R) format.
+
+**Supported Source Platforms:**
+- **SIEM & Analytics**: Splunk, Elastic, Sigma
+- **Endpoint/EDR**: CrowdStrike, Carbon Black, Microsoft Defender, SentinelOne
+- **Identity & Access**: Okta, Duo, Azure AD, Google Workspace
+- **Cloud Platforms**: AWS CloudTrail, Azure, Google Cloud
+- **Custom Sources**: Windows Event Logs, Syslog, JSON logs
+
+**Key Features:**
+- AI-powered rule conversion using LimaCharlie's MCP server
+- Batch processing for entire rule libraries
+- Interactive and CLI modes for automation
+- Platform-aware conversion with data schema validation
+- Detailed reporting and error handling
+
+**Quick Start:**
 ```bash
+cd rule_conversion
 pip install -r requirements.txt
-```
-
-### 2. (Optional) Configure LimaCharlie CLI
-
-If you already have the LimaCharlie CLI installed and configured, **the script will auto-detect your credentials**:
-
-```bash
-# Configure LimaCharlie CLI (if not already done)
-pip install limacharlie
-limacharlie login
-```
-
-Otherwise, you'll be prompted to enter your credentials manually.
-
-### 3. Prepare Your Rules
-
-Place your existing detection rules in a directory:
-
-```bash
-mkdir -p my-rules
-# Copy your existing rules into my-rules/
-```
-
-### 4. Run the Conversion
-
-```bash
 python convert_rules.py
 ```
 
-**If you have LimaCharlie CLI configured**, the script will detect and use those credentials:
-```
-✓ Found LimaCharlie credentials from ~/.limacharlie
-  Organization ID: 8b7a9c2d-xxxx
-  API Key: api_****7890
+See the [Rule Conversion README](./rule_conversion/README.md) for complete documentation.
 
-Use these credentials? (yes/no) [yes]:
-```
+## Coming Soon
 
-Otherwise, follow the interactive prompts to:
-- Enter your LimaCharlie credentials (API key and Organization ID)
-- Specify your source platform (e.g., `okta`, `crowdstrike`, `windows`)
-- Point to your rules directory
-- Confirm you've set up data ingestion
+Additional migration tools and guides are planned for:
+- Configuration migration helpers
+- Data ingestion setup automation
+- Response workflow conversion
+- Integration mapping guides
 
-### 5. Review the Results
+## Getting Started
 
-Converted rules will be in `my-rules/output/`:
-
-```bash
-ls my-rules/output/
-# suspicious_login.yaml
-# brute_force.yaml
-# report.txt  ← Detailed conversion report
-```
-
-## Complete Documentation
-
-For detailed step-by-step instructions, see **[MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)**
-
-The guide covers:
-- Setting up your LimaCharlie account
-- Configuring data ingestion for your platform
-- Running the conversion process
-- Testing and deploying converted rules
-- Troubleshooting common issues
-
-## Features
-
-- **Credential Auto-Detection**: Automatically uses credentials from LimaCharlie CLI or environment variables
-- **AI-Powered Conversion**: Uses LimaCharlie's MCP server tools to intelligently convert rules
-- **Platform-Aware**: Adapts to your specific data source (Okta, CrowdStrike, Windows, etc.)
-- **Batch Processing**: Convert entire rule libraries at once
-- **Error Resilience**: Continues processing even if some rules fail
-- **Detailed Reporting**: Generates comprehensive reports with success/failure details
-- **Interactive & Automated**: Supports both interactive and command-line modes
-
-## Command-Line Usage
-
-For automation and CI/CD integration:
-
-```bash
-python convert_rules.py \
-  --oid "your-org-id" \
-  --api-key "your-api-key" \
-  --platform "okta" \
-  --rules-dir "/path/to/rules" \
-  --skip-confirmation
-```
-
-### Arguments
-
-- `--oid`: LimaCharlie Organization ID
-- `--api-key`: LimaCharlie API Key
-- `--platform`: Source platform name (e.g., okta, crowdstrike, windows)
-- `--rules-dir`: Directory containing source rules
-- `--output-dir`: Output directory (default: rules-dir/output)
-- `--skip-confirmation`: Skip the data ingestion confirmation prompt
-- `--endpoint`: MCP server endpoint (default: https://mcp.limacharlie.io/mcp)
-
-## Example Conversion
-
-**Input** (Splunk SPL rule):
-```spl
-index=okta sourcetype=okta:system action=user.session.start
-| where outcome.result="FAILURE"
-| stats count by user.email, client.ipAddress
-| where count > 5
-```
-
-**Output** (LimaCharlie D&R rule):
-```yaml
-detect:
-  op: and
-  event: authentication.login
-  rules:
-    - op: is
-      path: event/outcome/result
-      value: FAILURE
-    - op: exists
-      path: event/client/ipAddress
-
-respond:
-  - action: report
-    name: Multiple Failed Login Attempts Detected
-    metadata:
-      severity: medium
-      category: credential_access
-      platform: okta
-  - action: add tag
-    tag: failed_authentication
-    ttl: 86400
-```
-
-## Supported Platforms
-
-The conversion tool works with rules targeting:
-
-### Identity & Access
-- Okta
-- Duo
-- Azure Active Directory
-- Google Workspace
-- OneLogin
-
-### Endpoint/EDR
-- CrowdStrike
-- Carbon Black
-- Microsoft Defender
-- SentinelOne
-- Windows (native sensors)
-- macOS (native sensors)
-- Linux (native sensors)
-
-### Cloud Platforms
-- AWS CloudTrail
-- Azure Activity Logs
-- Google Cloud Audit Logs
-
-### Network & Logs
-- Syslog
-- Windows Event Logs
-- Custom JSON logs
+1. **Choose Your Migration Tool**: Start with the component that matches your migration needs
+2. **Review Documentation**: Each tool has comprehensive guides and examples
+3. **Test First**: Use the tools with sample data before production migration
+4. **Get Support**: Visit [LimaCharlie Community](https://community.limacharlie.com) for help
 
 ## Prerequisites
 
-1. **LimaCharlie Account**: Sign up at [https://app.limacharlie.io](https://app.limacharlie.io)
-2. **API Credentials**: Generate an API key from your LimaCharlie organization
-3. **Data Ingestion**: Configure the relevant platform/adapter in LimaCharlie BEFORE running conversion
-4. **Python 3.8+**: Required to run the conversion script
+Before using these migration tools:
 
-## Project Structure
+1. **LimaCharlie Account**: Sign up at [app.limacharlie.io](https://app.limacharlie.io)
+2. **API Credentials**: Generate an API key from your organization settings
+3. **Data Ingestion**: Configure relevant adapters/sensors in LimaCharlie
+4. **Python 3.8+**: Required for running migration scripts
 
-```
-rule_conversion/
-├── README.md                  ← This file
-├── MIGRATION_GUIDE.md         ← Detailed step-by-step guide
-├── convert_rules.py           ← Main conversion script
-├── requirements.txt           ← Python dependencies
-└── examples/                  ← Example rules for testing
-    ├── okta/
-    │   ├── suspicious_login.txt
-    │   └── brute_force.yaml
-    ├── crowdstrike/
-    │   └── malware_detection.json
-    └── windows/
-        └── privilege_escalation.yml
-```
+## Resources
 
-## How It Works
-
-1. **Tool Discovery**: Connects to LimaCharlie MCP server and discovers available AI tools
-2. **Rule Reading**: Reads all files from your specified rules directory
-3. **AI Conversion**: For each rule:
-   - Sends to `generate_dr_rule_detection` (creates the detection logic)
-   - Sends to `generate_dr_rule_respond` (creates the response actions)
-4. **YAML Generation**: Combines detect and respond sections into LimaCharlie D&R format
-5. **Output**: Writes converted rules to output directory with original filenames
-6. **Reporting**: Generates detailed report with success/failure statistics
-
-## Troubleshooting
-
-### Common Issues
-
-**"Failed to connect to MCP server"**
-- Verify your API key and Organization ID are correct
-- Check network connectivity to https://mcp.limacharlie.io
-
-**"Tool not found: generate_dr_rule_detection"**
-- Ensure AI features are enabled in your LimaCharlie organization
-- Contact LimaCharlie support to enable AI-powered tools
-
-**"No data found for platform 'X'"**
-- You must configure data ingestion BEFORE running conversion
-- See MIGRATION_GUIDE.md Step 2 for platform setup instructions
-
-**Rules convert but don't match in production**
-- Verify data is flowing in LimaCharlie Timeline
-- Check event field names match your actual data schema
-- Use LimaCharlie's Replay service to test rules with historical data
-
-For more troubleshooting help, see the [Troubleshooting section](MIGRATION_GUIDE.md#troubleshooting) in the Migration Guide.
-
-## Getting Help
-
-- **Documentation**: [https://docs.limacharlie.io](https://docs.limacharlie.io)
-- **Community Forum**: [https://community.limacharlie.com](https://community.limacharlie.com)
-- **MCP Server Docs**: [https://docs.limacharlie.io/docs/mcp-server](https://docs.limacharlie.io/docs/mcp-server)
+- **Documentation**: [docs.limacharlie.io](https://docs.limacharlie.io)
+- **Community Forum**: [community.limacharlie.com](https://community.limacharlie.com)
+- **MCP Server**: [docs.limacharlie.io/docs/mcp-server](https://docs.limacharlie.io/docs/mcp-server)
 
 ## Contributing
 
-Contributions welcome! If you find issues or have suggestions:
+Contributions are welcome! If you've developed migration tools or guides that would benefit others:
 
-1. Check existing issues
-2. Open a new issue with details
-3. Submit pull requests with improvements
+1. Fork this repository
+2. Create a feature branch
+3. Submit a pull request with your additions
+
+## Support
+
+For questions or issues:
+- Check tool-specific documentation in each subdirectory
+- Visit the [LimaCharlie Community](https://community.limacharlie.com)
+- Open an issue in this repository
 
 ## License
 
 MIT License - See LICENSE file for details
-
-## Version
-
-**Version**: 1.0.0
-**Last Updated**: January 2025
-
-## Credits
-
-Built by the LimaCharlie team to help security teams migrate to the LimaCharlie platform.
-
-Powered by the [LimaCharlie MCP Server](https://docs.limacharlie.io/docs/mcp-server) and the [Model Context Protocol](https://modelcontextprotocol.io).
