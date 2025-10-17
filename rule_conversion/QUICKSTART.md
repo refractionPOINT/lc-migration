@@ -129,8 +129,11 @@ python convert_rules.py \
   --api-key "your-key" \
   --platform "okta" \
   --rules-dir "./my-rules" \
+  --parallel-workers 10 \
   --skip-confirmation
 ```
+
+**Performance Tip**: Use `--parallel-workers N` to control concurrency (default: 10). Higher values can speed up large batch conversions, but may hit API rate limits.
 
 ## Test with Examples
 
@@ -142,6 +145,7 @@ python convert_rules.py \
   --api-key "your-key" \
   --platform "okta" \
   --rules-dir "./examples/okta" \
+  --parallel-workers 5 \
   --skip-confirmation
 ```
 

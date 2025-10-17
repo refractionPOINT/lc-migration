@@ -29,6 +29,7 @@ A fully-featured, production-ready Python script with:
 - **MCP Client Implementation**: Full JSON-RPC 2.0 client for LimaCharlie MCP server
 - **Tool Discovery**: Dynamically discovers available tools via `tools/list`
 - **AI-Powered Conversion**: Uses `generate_dr_rule_detection` and `generate_dr_rule_respond`
+- **Parallel Processing**: Concurrent rule conversion with configurable worker count (default: 10, range: 1-50)
 - **Batch Processing**: Converts entire directories of rules
 - **Error Resilience**: Continues processing even if individual rules fail
 
@@ -307,6 +308,15 @@ Before release, test with:
 4. **Large Rule Sets**: 50+ rules to test performance
 5. **Various Formats**: JSON, YAML, plain text, Sigma
 
+## Implemented Enhancements
+
+Completed improvements:
+
+1. **Parallel Processing**: ✅ Concurrent rule conversion with configurable worker count (v1.1.0)
+   - Default 10 workers for ~10x speedup on large batches
+   - Configurable via `--parallel-workers` flag (1-50 range)
+   - Thread-safe stats tracking
+
 ## Future Enhancements
 
 Potential improvements:
@@ -316,9 +326,8 @@ Potential improvements:
 3. **Rule Testing**: Automatic Replay testing after conversion
 4. **Format Detection**: Auto-detect source platform from rule format
 5. **Progress Bar**: Visual progress indicator for large batches
-6. **Parallel Processing**: Convert multiple rules concurrently
-7. **Web UI**: Simple web interface for non-technical users
-8. **Docker Image**: Containerized version for easy deployment
+6. **Web UI**: Simple web interface for non-technical users
+7. **Docker Image**: Containerized version for easy deployment
 
 ## Questions to Verify with User
 

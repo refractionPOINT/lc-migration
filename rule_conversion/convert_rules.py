@@ -12,9 +12,11 @@ License: MIT
 """
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import os
 import sys
+import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -145,7 +147,7 @@ class MCPClient:
                 self.endpoint,
                 headers=self._get_headers(),
                 json=payload,
-                timeout=120  # 2 minutes timeout for AI operations
+                timeout=300  # 5 minutes timeout for AI operations
             )
             response.raise_for_status()
 
@@ -252,6 +254,7 @@ class RuleConverter:
             "failed": 0,
             "errors": []
         }
+        self.stats_lock = threading.Lock()
 
     def discover_tools(self) -> Tuple[Optional[Dict], Optional[Dict]]:
         """
@@ -288,7 +291,7 @@ class RuleConverter:
             print(f"✗ Error discovering tools: {e}")
             return None, None
 
-    def convert_rule(self, rule_content: str, rule_filename: str) -> Tuple[Optional[str], Optional[str]]:
+    def convert_rule(self, rule_content: str, rule_filename: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         """
         Convert a single rule to LimaCharlie D&R format.
 
@@ -297,7 +300,7 @@ class RuleConverter:
             rule_filename: Original filename for context
 
         Returns:
-            Tuple of (detect_yaml, respond_yaml) or (None, None) on error
+            Tuple of (detect_yaml, respond_yaml, error_message) where error_message is None on success
         """
         try:
             # Build natural language query for detection generation
@@ -346,14 +349,12 @@ Generate the response component in LimaCharlie D&R YAML format."""
             if not respond_yaml:
                 raise Exception("Response tool returned no YAML content")
 
-            return detect_yaml, respond_yaml
+            return detect_yaml, respond_yaml, None
 
         except Exception as e:
-            self.conversion_stats["errors"].append({
-                "file": rule_filename,
-                "error": str(e)
-            })
-            return None, None
+            error_msg = str(e)
+            # Error will be added to stats by the caller (process_directory)
+            return None, None, error_msg
 
     def _extract_yaml(self, tool_result: Dict) -> Optional[str]:
         """
@@ -462,13 +463,14 @@ Generate the response component in LimaCharlie D&R YAML format."""
 
         return None
 
-    def process_directory(self, input_dir: Path, output_dir: Path):
+    def process_directory(self, input_dir: Path, output_dir: Path, max_workers: int = 20):
         """
-        Process all rule files in a directory.
+        Process all rule files in a directory with parallel execution.
 
         Args:
             input_dir: Directory containing source rules
             output_dir: Directory to write converted rules
+            max_workers: Maximum number of parallel workers (default: 10)
         """
         # Get all files in the directory (excluding hidden files and output dir)
         rule_files = [
@@ -482,27 +484,26 @@ Generate the response component in LimaCharlie D&R YAML format."""
 
         self.conversion_stats["total"] = len(rule_files)
 
-        print(f"\nProcessing {len(rule_files)} rule file(s):\n")
+        print(f"\nProcessing {len(rule_files)} rule file(s) with {max_workers} parallel workers:\n")
 
-        for idx, rule_file in enumerate(rule_files, 1):
-            print(f"[{idx}/{len(rule_files)}] {rule_file.name} ... ", end="", flush=True)
+        # Create a worker function for processing a single rule
+        def process_single_rule(rule_file: Path, total: int) -> Tuple[Path, bool, Optional[str]]:
+            """
+            Process a single rule file.
 
+            Returns:
+                Tuple of (rule_file, success, error_message)
+            """
             try:
                 # Read rule content
                 with open(rule_file, 'r', encoding='utf-8') as f:
                     rule_content = f.read()
 
                 if not rule_content.strip():
-                    print("✗ Empty file")
-                    self.conversion_stats["failed"] += 1
-                    self.conversion_stats["errors"].append({
-                        "file": rule_file.name,
-                        "error": "Empty file"
-                    })
-                    continue
+                    return (rule_file, False, "Empty file")
 
                 # Convert the rule
-                detect_yaml, respond_yaml = self.convert_rule(rule_content, rule_file.name)
+                detect_yaml, respond_yaml, error_msg = self.convert_rule(rule_content, rule_file.name)
 
                 if detect_yaml and respond_yaml:
                     # Combine into final D&R rule format
@@ -513,19 +514,40 @@ Generate the response component in LimaCharlie D&R YAML format."""
                     with open(output_file, 'w', encoding='utf-8') as f:
                         f.write(combined_rule)
 
-                    print("✓ Success")
-                    self.conversion_stats["success"] += 1
+                    return (rule_file, True, None)
                 else:
-                    print("✗ Conversion failed")
-                    self.conversion_stats["failed"] += 1
+                    return (rule_file, False, error_msg or "Conversion failed")
 
             except Exception as e:
-                print(f"✗ Error: {e}")
-                self.conversion_stats["failed"] += 1
-                self.conversion_stats["errors"].append({
-                    "file": rule_file.name,
-                    "error": str(e)
-                })
+                return (rule_file, False, str(e))
+
+        # Use ThreadPoolExecutor for parallel processing
+        completed_count = 0
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all tasks
+            future_to_rule = {
+                executor.submit(process_single_rule, rule_file, len(rule_files)): rule_file
+                for rule_file in rule_files
+            }
+
+            # Process results as they complete
+            for future in as_completed(future_to_rule):
+                rule_file, success, error = future.result()
+                completed_count += 1
+
+                # Thread-safe stats update
+                with self.stats_lock:
+                    if success:
+                        self.conversion_stats["success"] += 1
+                        print(f"[{completed_count}/{len(rule_files)}] {rule_file.name} ... ✓ Success")
+                    else:
+                        self.conversion_stats["failed"] += 1
+                        if error:
+                            self.conversion_stats["errors"].append({
+                                "file": rule_file.name,
+                                "error": error
+                            })
+                        print(f"[{completed_count}/{len(rule_files)}] {rule_file.name} ... ✗ {error if error else 'Failed'}")
 
     def _create_dr_rule(self, detect_yaml: str, respond_yaml: str) -> str:
         """
@@ -703,6 +725,7 @@ Examples:
     --api-key "YOUR_API_KEY" \\
     --platform "okta" \\
     --rules-dir "/path/to/rules" \\
+    --parallel-workers 10 \\
     --skip-confirmation
         """
     )
@@ -712,12 +735,19 @@ Examples:
     parser.add_argument("--platform", help="Source platform name (e.g., okta, crowdstrike)")
     parser.add_argument("--rules-dir", help="Directory containing source rules")
     parser.add_argument("--output-dir", help="Output directory (default: rules-dir/output)")
+    parser.add_argument("--parallel-workers", type=int, default=10,
+                       help="Number of parallel workers for rule conversion (default: 10, min: 1, max: 50)")
     parser.add_argument("--skip-confirmation", action="store_true",
                        help="Skip data ingestion confirmation prompt")
     parser.add_argument("--endpoint", default="https://mcp.limacharlie.io/mcp",
                        help="MCP server endpoint (default: https://mcp.limacharlie.io/mcp)")
 
     args = parser.parse_args()
+
+    # Validate parallel_workers
+    if args.parallel_workers < 1 or args.parallel_workers > 50:
+        print(f"ERROR: --parallel-workers must be between 1 and 50 (got {args.parallel_workers})")
+        sys.exit(1)
 
     print("=" * 70)
     print("LIMACHARLIE RULE CONVERSION TOOL")
@@ -830,7 +860,7 @@ Examples:
     start_time = datetime.now()
 
     try:
-        converter.process_directory(rules_dir, output_dir)
+        converter.process_directory(rules_dir, output_dir, max_workers=args.parallel_workers)
     except KeyboardInterrupt:
         print("\n\nConversion interrupted by user.")
         sys.exit(1)

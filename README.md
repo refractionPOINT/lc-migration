@@ -21,6 +21,7 @@ AI-powered toolkit for converting security detection rules from various platform
 
 **Key Features:**
 - AI-powered rule conversion using LimaCharlie's MCP server
+- Parallel processing (20 concurrent rules by default) for faster batch conversion
 - Batch processing for entire rule libraries
 - Interactive and CLI modes for automation
 - Platform-aware conversion with data schema validation
