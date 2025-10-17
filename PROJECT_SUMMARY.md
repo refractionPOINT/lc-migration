@@ -60,7 +60,6 @@ A 5-minute getting-started guide for users who want to jump right in:
 - 4-step workflow (prepare → convert → review → deploy)
 - Quick troubleshooting table
 - Command-line examples
-- Testing with included examples
 
 ### 4. **Main README** (`README.md`)
 
@@ -75,26 +74,7 @@ Project documentation including:
 - Troubleshooting guide
 - Getting help resources
 
-### 5. **Example Rules** (`examples/`)
-
-Sample rules from 4 different platforms demonstrating format flexibility:
-
-#### Okta Examples
-- `suspicious_login_impossible_travel.txt` - Plain text description
-- `brute_force_attack.yaml` - YAML structured rule
-
-#### CrowdStrike Examples
-- `malware_execution_detected.json` - JSON formatted rule
-
-#### Windows Examples
-- `privilege_escalation_attempt.yml` - YAML with detailed conditions
-
-#### Sigma Examples
-- `credential_dumping_lsass.yml` - Standard Sigma rule format
-
-Plus an `examples/README.md` explaining how to use them.
-
-### 6. **Dependencies** (`requirements.txt`)
+### 5. **Dependencies** (`requirements.txt`)
 
 Minimal dependencies:
 - `requests` - HTTP client for MCP communication
@@ -184,17 +164,7 @@ python convert_rules.py \
   --skip-confirmation
 ```
 
-### Workflow 3: Testing with Examples
-
-```bash
-python convert_rules.py \
-  --oid "YOUR_OID" \
-  --api-key "YOUR_API_KEY" \
-  --platform "okta" \
-  --rules-dir "./examples/okta"
-```
-
-### Workflow 4: CI/CD Integration
+### Workflow 3: CI/CD Integration
 
 ```yaml
 # .github/workflows/convert-rules.yml
@@ -253,19 +223,10 @@ rule_conversion/
 ├── QUICKSTART.md                      # 5-minute getting started guide
 ├── MIGRATION_GUIDE.md                 # Comprehensive step-by-step guide (20+ pages)
 ├── PROJECT_SUMMARY.md                 # This file
+├── CHANGELOG.md                       # Version history and changes
 ├── convert_rules.py                   # Main conversion script (executable)
-├── requirements.txt                   # Python dependencies
-└── examples/                          # Sample rules for testing
-    ├── README.md                      # Examples documentation
-    ├── okta/
-    │   ├── suspicious_login_impossible_travel.txt
-    │   └── brute_force_attack.yaml
-    ├── crowdstrike/
-    │   └── malware_execution_detected.json
-    ├── windows/
-    │   └── privilege_escalation_attempt.yml
-    └── sigma/
-        └── credential_dumping_lsass.yml
+├── verify_setup.py                    # Setup verification script
+└── requirements.txt                   # Python dependencies
 ```
 
 ## Supported Platforms
@@ -318,14 +279,15 @@ tar -czf limacharlie-rule-migration-v1.0.0.tar.gz \
   README.md \
   QUICKSTART.md \
   MIGRATION_GUIDE.md \
+  CHANGELOG.md \
   convert_rules.py \
-  requirements.txt \
-  examples/
+  verify_setup.py \
+  requirements.txt
 
 # Or ZIP format
 zip -r limacharlie-rule-migration-v1.0.0.zip \
-  README.md QUICKSTART.md MIGRATION_GUIDE.md \
-  convert_rules.py requirements.txt examples/
+  README.md QUICKSTART.md MIGRATION_GUIDE.md CHANGELOG.md \
+  convert_rules.py verify_setup.py requirements.txt
 ```
 
 ### Option 3: Documentation Site
