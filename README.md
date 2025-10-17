@@ -1,4 +1,8 @@
-# LimaCharlie Rule Migration Toolkit
+# LimaCharlie Migration Tools
+
+Various tools and guides to help with migrating to LimaCharlie.
+
+## Rule Migration Toolkit
 
 Automatically convert security detection rules from various platforms (Splunk, Elastic, Sigma, CrowdStrike, Okta, etc.) into LimaCharlie Detection & Response (D&R) rules using AI-powered conversion.
 
