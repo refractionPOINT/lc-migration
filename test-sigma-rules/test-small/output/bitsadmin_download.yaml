@@ -1,0 +1,81 @@
+detect:
+  event: NEW_PROCESS
+  op: and
+  rules:
+  - op: is windows
+  - op: or
+    rules:
+    - op: ends with
+      path: event/FILE_PATH
+      value: \bitsadmin.exe
+      case sensitive: false
+    - op: is
+      path: event/original/FileName
+      value: bitsadmin.exe
+      case sensitive: false
+  - op: or
+    rules:
+    - op: contains
+      path: event/COMMAND_LINE
+      value: ' /transfer '
+      case sensitive: false
+    - op: and
+      rules:
+      - op: or
+        rules:
+        - op: contains
+          path: event/COMMAND_LINE
+          value: ' /create '
+          case sensitive: false
+        - op: contains
+          path: event/COMMAND_LINE
+          value: ' /addfile '
+          case sensitive: false
+      - op: contains
+        path: event/COMMAND_LINE
+        value: http
+        case sensitive: false
+respond:
+- action: report
+  name: 'Bitsadmin File Download Detected: {{ .event.COMMAND_LINE }}'
+  publish: true
+  priority: 3
+  metadata:
+    author: Michael Haag, FPT.EagleEye, LimaCharlie
+    description: Detects usage of bitsadmin downloading a file. This utility is often
+      abused by adversaries for defense evasion, persistence, or to download additional
+      payloads.
+    references:
+    - https://blog.netspi.com/15-ways-to-download-a-file/#bitsadmin
+    - https://isc.sans.edu/diary/22264
+    - https://lolbas-project.github.io/lolbas/Binaries/Bitsadmin/
+    mitre_attack:
+    - T1197
+    - T1036.003
+    level: medium
+    status: stable
+    false_positives:
+    - Some legitimate applications might use bitsadmin, but usage is generally limited
+      and should be investigated.
+    tags:
+    - attack.defense-evasion
+    - attack.persistence
+    - attack.t1197
+    - attack.s0190
+    - attack.t1036.003
+    - windows.bitsadmin
+    - file.download
+- action: task
+  command: history_dump
+  investigation: bitsadmin-download-investigation
+  suppression:
+    max_count: 1
+    period: 1h
+    is_global: false
+    keys:
+    - '{{ .event.PROCESS_ID }}'
+    - bitsadmin-history-dump
+- action: add tag
+  tag: bitsadmin-download-detected
+  ttl: 3600
+  entire_device: false

@@ -1,0 +1,11 @@
+# LimaCharlie Rule Conversion Tool - Python Dependencies
+
+# HTTP client for MCP server communication
+requests>=2.31.0
+
+# YAML parsing and generation
+pyyaml>=6.0.1
+
+# Optional: LimaCharlie CLI for testing and deployment
+# Uncomment the line below if you want to install the official CLI
+# limacharlie>=5.0.0

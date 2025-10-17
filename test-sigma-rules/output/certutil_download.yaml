@@ -1,0 +1,80 @@
+detect:
+  event: NEW_PROCESS
+  op: and
+  rules:
+  - op: is windows
+  - op: ends with
+    path: event/FILE_PATH
+    value: \certutil.exe
+    case sensitive: false
+  - op: or
+    rules:
+    - op: contains
+      path: event/COMMAND_LINE
+      value: urlcache
+      case sensitive: false
+    - op: contains
+      path: event/COMMAND_LINE
+      value: verifyctl
+      case sensitive: false
+  - op: contains
+    path: event/COMMAND_LINE
+    value: http
+    case sensitive: false
+respond:
+- action: report
+  name: Suspicious Download via Certutil.exe - {{ .event.COMMAND_LINE }}
+  publish: true
+  priority: 3
+  metadata:
+    author: Florian Roth (Nextron Systems), Jonhnathan Ribeiro, oscd.community, Nasreddine
+      Bencherchali (Nextron Systems)
+    description: Detects the execution of certutil.exe with flags (`urlcache` or `verifyctl`)
+      and an `http` URL, indicating a suspicious file download. This technique is
+      often used for defense evasion and initial access.
+    references:
+    - https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/certutil
+    - https://forensicitguy.github.io/agenttesla-vba-certutil-download/
+    - https://news.sophos.com/en-us/2021/04/13/compromised-exchange-server-hosting-cryptojacker-targeting-other-exchange-servers/
+    - https://twitter.com/egre55/status/1087685529016193025
+    - https://lolbas-project.github.io/lolbas/Binaries/Certutil/
+    mitre_attack:
+    - T1027
+    - T1105
+    level: medium
+    status: stable
+    false_positives:
+    - Legitimate use of certutil for certificate management (e.g., fetching CRLs)
+      if not properly filtered by command line arguments. Review command line for
+      context.
+    - Custom scripts using certutil for benign purposes.
+    tags:
+    - attack.defense-evasion
+    - attack.t1027
+    - lolbas
+    - download
+- action: task
+  command: history_dump
+  investigation: certutil-download-investigation
+  suppression:
+    is_global: false
+    keys:
+    - '{{ .event.PROCESS_ID }}'
+    - certutil-history-dump
+    max_count: 1
+    period: 1h
+- action: task
+  command: yara_scan hive://yara/malware_memory_signatures --pid "{{ .event.PROCESS_ID
+    }}"
+  investigation: certutil-memory-scan
+  suppression:
+    is_global: false
+    keys:
+    - '{{ .event.PROCESS_ID }}'
+    - certutil-yara-scan
+    max_count: 1
+    period: 1h
+- action: add tag
+  tag: suspicious-certutil-download
+  ttl: 3600
+  entire_device: false

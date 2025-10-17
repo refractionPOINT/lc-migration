@@ -1,0 +1,545 @@
+detect:
+  event: REGISTRY_WRITE
+  op: and
+  rules:
+  - op: is windows
+  - op: contains
+    path: event/REGISTRY_KEY
+    value: \SOFTWARE\Microsoft\Windows\CurrentVersion
+    case sensitive: false
+  - op: or
+    rules:
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \ShellServiceObjectDelayLoad
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Run\
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \RunOnce\
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \RunOnceEx\
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \RunServices\
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \RunServicesOnce\
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Policies\System\Shell
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Policies\Explorer\Run
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Group Policy\Scripts\Startup
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Group Policy\Scripts\Shutdown
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Group Policy\Scripts\Logon
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Group Policy\Scripts\Logoff
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Explorer\ShellServiceObjects
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Explorer\ShellIconOverlayIdentifiers
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Explorer\ShellExecuteHooks
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Explorer\SharedTaskScheduler
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Explorer\Browser Helper Objects
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Authentication\PLAP Providers
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Authentication\Credential Providers
+      case sensitive: false
+    - op: contains
+      path: event/REGISTRY_KEY
+      value: \Authentication\Credential Provider Filters
+      case sensitive: false
+  - op: or
+    not: true
+    rules:
+    - op: or
+      rules:
+      - op: is
+        path: event/REGISTRY_VALUE
+        value: (Empty)
+        case sensitive: false
+      - op: ends with
+        path: event/REGISTRY_KEY
+        value: \NgcFirst\ConsecutiveSwitchCount
+        case sensitive: false
+      - op: or
+        rules:
+        - op: ends with
+          path: event/FILE_PATH
+          value: \AppData\Local\Microsoft\OneDrive\Update\OneDriveSetup.exe
+          case sensitive: false
+        - op: ends with
+          path: event/FILE_PATH
+          value: \AppData\Roaming\Spotify\Spotify.exe
+          case sensitive: false
+        - op: ends with
+          path: event/FILE_PATH
+          value: \AppData\Local\WebEx\WebexHost.exe
+          case sensitive: false
+      - op: or
+        rules:
+        - op: is
+          path: event/FILE_PATH
+          value: C:\WINDOWS\system32\devicecensus.exe
+          case sensitive: false
+        - op: is
+          path: event/FILE_PATH
+          value: C:\Windows\system32\winsat.exe
+          case sensitive: false
+        - op: is
+          path: event/FILE_PATH
+          value: C:\Program Files\Microsoft OneDrive\StandaloneUpdater\OneDriveSetup.exe
+          case sensitive: false
+        - op: is
+          path: event/FILE_PATH
+          value: C:\Program Files\Microsoft OneDrive\Update\OneDriveSetup.exe
+          case sensitive: false
+        - op: is
+          path: event/FILE_PATH
+          value: C:\Program Files (x86)\Microsoft OneDrive\Update\OneDriveSetup.exe
+          case sensitive: false
+        - op: is
+          path: event/FILE_PATH
+          value: C:\Program Files\KeePass Password Safe 2\ShInstUtil.exe
+          case sensitive: false
+        - op: is
+          path: event/FILE_PATH
+          value: C:\Program Files\Everything\Everything.exe
+          case sensitive: false
+        - op: is
+          path: event/FILE_PATH
+          value: C:\Program Files (x86)\Microsoft Office\root\integration\integrator.exe
+          case sensitive: false
+        - op: is
+          path: event/FILE_PATH
+          value: C:\Program Files\Microsoft Office\root\integration\integrator.exe
+          case sensitive: false
+    - op: and
+      rules:
+      - op: is
+        path: event/FILE_PATH
+        value: C:\Windows\system32\LogonUI.exe
+        case sensitive: false
+      - op: or
+        rules:
+        - op: contains
+          path: event/REGISTRY_KEY
+          value: \Authentication\Credential Providers\{D6886603-9D2F-4EB2-B667-1971041FA96B}\
+          case sensitive: false
+        - op: contains
+          path: event/REGISTRY_KEY
+          value: \Authentication\Credential Providers\{BEC09223-B018-416D-A0AC-523971B639F5}\
+          case sensitive: false
+        - op: contains
+          path: event/REGISTRY_KEY
+          value: \Authentication\Credential Providers\{8AF662BF-65A0-4D0A-A540-A338A999D36F}\
+          case sensitive: false
+        - op: contains
+          path: event/REGISTRY_KEY
+          value: \Authentication\Credential Providers\{27FBDB57-B613-4AF2-9D7E-4FA7A66C21AD}\
+          case sensitive: false
+    - op: or
+      rules:
+      - op: starts with
+        path: event/FILE_PATH
+        value: C:\Program Files (x86)\Microsoft\EdgeUpdate\Install\
+        case sensitive: false
+      - op: starts with
+        path: event/FILE_PATH
+        value: C:\Program Files (x86)\Microsoft\EdgeWebView\
+        case sensitive: false
+      - op: starts with
+        path: event/FILE_PATH
+        value: C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe
+        case sensitive: false
+    - op: and
+      rules:
+      - op: or
+        rules:
+        - op: starts with
+          path: event/FILE_PATH
+          value: C:\Program Files\Common Files\Microsoft Shared\ClickToRun\
+          case sensitive: false
+        - op: starts with
+          path: event/FILE_PATH
+          value: C:\Program Files\Common Files\Microsoft Shared\ClickToRun\Updates\
+          case sensitive: false
+      - op: ends with
+        path: event/FILE_PATH
+        value: \OfficeClickToRun.exe
+        case sensitive: false
+    - op: is
+      path: event/FILE_PATH
+      value: C:\Program Files\Windows Defender\MsMpEng.exe
+      case sensitive: false
+    - op: and
+      rules:
+      - op: ends with
+        path: event/FILE_PATH
+        value: \Microsoft\Teams\current\Teams.exe
+        case sensitive: false
+      - op: contains
+        path: event/REGISTRY_VALUE
+        value: '\Microsoft\Teams\Update.exe --processStart '
+        case sensitive: false
+    - op: and
+      rules:
+      - op: is
+        path: event/FILE_PATH
+        value: C:\Windows\system32\userinit.exe
+        case sensitive: false
+      - op: is
+        path: event/REGISTRY_VALUE
+        value: ctfmon.exe /n
+        case sensitive: false
+  - op: or
+    not: true
+    rules:
+    - op: and
+      rules:
+      - op: is
+        path: event/FILE_PATH
+        value: C:\Windows\system32\regsvr32.exe
+        case sensitive: false
+      - op: contains
+        path: event/REGISTRY_KEY
+        value: DropboxExt
+        case sensitive: false
+      - op: ends with
+        path: event/REGISTRY_VALUE
+        value: A251-47B7-93E1-CDD82E34AF8B}
+        case sensitive: false
+    - op: and
+      rules:
+      - op: ends with
+        path: event/REGISTRY_KEY
+        value: \SOFTWARE\Microsoft\Windows\CurrentVersion\Run\Opera Browser Assistant
+        case sensitive: false
+      - op: is
+        path: event/REGISTRY_VALUE
+        value: C:\Program Files\Opera\assistant\browser_assistant.exe
+        case sensitive: false
+    - op: and
+      rules:
+      - op: ends with
+        path: event/REGISTRY_KEY
+        value: \Software\Microsoft\Windows\CurrentVersion\Run\Opera Stable
+        case sensitive: false
+      - op: or
+        rules:
+        - op: is
+          path: event/REGISTRY_VALUE
+          value: C:\Program Files\Opera\launcher.exe
+          case sensitive: false
+        - op: is
+          path: event/REGISTRY_VALUE
+          value: C:\Program Files (x86)\Opera\launcher.exe
+          case sensitive: false
+    - op: and
+      rules:
+      - op: ends with
+        path: event/REGISTRY_KEY
+        value: \SOFTWARE\Microsoft\Windows\CurrentVersion\Run\iTunesHelper
+        case sensitive: false
+      - op: is
+        path: event/REGISTRY_VALUE
+        value: '"C:\Program Files\iTunes\iTunesHelper.exe"'
+        case sensitive: false
+    - op: and
+      rules:
+      - op: ends with
+        path: event/REGISTRY_KEY
+        value: \SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce\zoommsirepair
+        case sensitive: false
+      - op: is
+        path: event/REGISTRY_VALUE
+        value: '"C:\Program Files\Zoom\bin\installer.exe" /repair'
+        case sensitive: false
+    - op: and
+      rules:
+      - op: ends with
+        path: event/REGISTRY_KEY
+        value: \SOFTWARE\Microsoft\Windows\CurrentVersion\Run\Greenshot
+        case sensitive: false
+      - op: is
+        path: event/REGISTRY_VALUE
+        value: C:\Program Files\Greenshot\Greenshot.exe
+        case sensitive: false
+    - op: and
+      rules:
+      - op: ends with
+        path: event/REGISTRY_KEY
+        value: \Software\Microsoft\Windows\CurrentVersion\Run\GoogleDriveFS
+        case sensitive: false
+      - op: starts with
+        path: event/REGISTRY_VALUE
+        value: C:\Program Files\Google\Drive File Stream\
+        case sensitive: false
+      - op: contains
+        path: event/REGISTRY_VALUE
+        value: \GoogleDriveFS.exe
+        case sensitive: false
+    - op: and
+      rules:
+      - op: contains
+        path: event/REGISTRY_KEY
+        value: GoogleDrive
+        case sensitive: false
+      - op: or
+        rules:
+        - op: is
+          path: event/REGISTRY_VALUE
+          value: '{CFE8B367-77A7-41D7-9C90-75D16D7DC6B6}'
+          case sensitive: false
+        - op: is
+          path: event/REGISTRY_VALUE
+          value: '{A8E52322-8734-481D-A7E2-27B309EF8D56}'
+          case sensitive: false
+        - op: is
+          path: event/REGISTRY_VALUE
+          value: '{C973DA94-CBDF-4E77-81D1-E5B794FBD146}'
+          case sensitive: false
+        - op: is
+          path: event/REGISTRY_VALUE
+          value: '{51EF1569-67EE-4AD6-9646-E726C3FFC8A2}'
+          case sensitive: false
+    - op: and
+      rules:
+      - op: or
+        rules:
+        - op: starts with
+          path: event/REGISTRY_VALUE
+          value: C:\Windows\system32\cmd.exe /q /c rmdir /s /q "C:\Users\
+          case sensitive: false
+        - op: starts with
+          path: event/REGISTRY_VALUE
+          value: C:\Windows\system32\cmd.exe /q /c del /q "C:\Users\
+          case sensitive: false
+      - op: contains
+        path: event/REGISTRY_VALUE
+        value: \AppData\Local\Microsoft\OneDrive\
+        case sensitive: false
+    - op: and
+      rules:
+      - op: contains
+        path: event/REGISTRY_KEY
+        value: \Microsoft\Windows\CurrentVersion\RunOnce\{
+        case sensitive: false
+      - op: and
+        rules:
+        - op: contains
+          path: event/REGISTRY_VALUE
+          value: \AppData\Local\Package Cache\{
+          case sensitive: false
+        - op: contains
+          path: event/REGISTRY_VALUE
+          value: '}\python-'
+          case sensitive: false
+      - op: ends with
+        path: event/REGISTRY_VALUE
+        value: .exe" /burn.runonce
+        case sensitive: false
+    - op: and
+      rules:
+      - op: or
+        rules:
+        - op: contains
+          path: event/FILE_PATH
+          value: C:\Program Files\AVG\Antivirus\Setup\
+          case sensitive: false
+        - op: contains
+          path: event/FILE_PATH
+          value: C:\Program Files (x86)\AVG\Antivirus\Setup\
+          case sensitive: false
+        - op: contains
+          path: event/FILE_PATH
+          value: \instup.exe
+          case sensitive: false
+      - op: or
+        rules:
+        - op: is
+          path: event/REGISTRY_VALUE
+          value: '"C:\Program Files\AVG\Antivirus\AvLaunch.exe" /gui'
+          case sensitive: false
+        - op: is
+          path: event/REGISTRY_VALUE
+          value: '"C:\Program Files (x86)\AVG\Antivirus\AvLaunch.exe" /gui'
+          case sensitive: false
+        - op: is
+          path: event/REGISTRY_VALUE
+          value: '{472083B0-C522-11CF-8763-00608CC02F24}'
+          case sensitive: false
+        - op: is
+          path: event/REGISTRY_VALUE
+          value: '{472083B1-C522-11CF-8763-00608CC02F24}'
+          case sensitive: false
+    - op: and
+      rules:
+      - op: or
+        rules:
+        - op: contains
+          path: event/FILE_PATH
+          value: C:\Program Files\Avast Software\Avast\Setup\
+          case sensitive: false
+        - op: contains
+          path: event/FILE_PATH
+          value: C:\Program Files (x86)\Avast Software\Avast\Setup\
+          case sensitive: false
+        - op: contains
+          path: event/FILE_PATH
+          value: \instup.exe
+          case sensitive: false
+      - op: or
+        rules:
+        - op: is
+          path: event/REGISTRY_VALUE
+          value: '"C:\Program Files\Avast Software\Avast\AvLaunch.exe" /gui'
+          case sensitive: false
+        - op: is
+          path: event/REGISTRY_VALUE
+          value: '"C:\Program Files (x86)\Avast Software\Avast\AvLaunch.exe" /gui'
+          case sensitive: false
+    - op: and
+      rules:
+      - op: or
+        rules:
+        - op: is
+          path: event/FILE_PATH
+          value: C:\Program Files\AVG\Antivirus\avgToolsSvc.exe
+          case sensitive: false
+        - op: is
+          path: event/FILE_PATH
+          value: C:\Program Files (x86)\AVG\Antivirus\avgToolsSvc.exe
+          case sensitive: false
+      - op: contains
+        path: event/REGISTRY_KEY
+        value: \Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run\
+        case sensitive: false
+      - op: is
+        path: event/REGISTRY_VALUE
+        value: Binary Data
+        case sensitive: false
+    - op: and
+      rules:
+      - op: or
+        rules:
+        - op: ends with
+          path: event/FILE_PATH
+          value: \aurora-agent-64.exe
+          case sensitive: false
+        - op: ends with
+          path: event/FILE_PATH
+          value: \aurora-agent.exe
+          case sensitive: false
+      - op: ends with
+        path: event/REGISTRY_KEY
+        value: \Microsoft\Windows\CurrentVersion\Run\aurora-dashboard
+        case sensitive: false
+      - op: is
+        path: event/REGISTRY_VALUE
+        value: C:\Program Files\Aurora-Agent\tools\aurora-dashboard.exe
+        case sensitive: false
+    - op: and
+      rules:
+      - op: ends with
+        path: event/REGISTRY_KEY
+        value: \Microsoft\Windows\CurrentVersion\Run\Everything
+        case sensitive: false
+      - op: ends with
+        path: event/REGISTRY_VALUE
+        value: \Everything\Everything.exe" -startup
+        case sensitive: false
+    - op: and
+      rules:
+      - op: ends with
+        path: event/REGISTRY_KEY
+        value: \Software\Microsoft\Windows\CurrentVersion\Run\Discord
+        case sensitive: false
+      - op: ends with
+        path: event/REGISTRY_VALUE
+        value: \Discord\Update.exe --processStart Discord.exe
+        case sensitive: false
+respond:
+- action: report
+  name: Windows Autorun Key Modified by {{ .event.FILE_PATH | basename }}
+  priority: 3
+  publish: true
+  metadata:
+    author: Victor Sergeev, Daniil Yugoslavskiy, Gleb Sukhodolskiy, Timur Zinniatullin,
+      oscd.community, Tim Shelton, frack113 (split)
+    description: Detected modification of a Windows Autostart Extensibility Point
+      (ASEP) registry key (e.g., Run, RunOnce, ShellServiceObjectDelayLoad). This
+      technique is commonly used for persistence by malware and legitimate applications
+      alike. Further investigation is recommended to determine legitimacy.
+    references:
+    - https://github.com/redcanaryco/atomic-red-team/blob/f339e7da7d05f6057fdfcdd3742bfcf365fee2a9/atomics/T1547.001/T1547.001.md
+    - https://learn.microsoft.com/en-us/sysinternals/downloads/autoruns
+    - https://gist.github.com/GlebSukhodolskiy/0fc5fa5f482903064b448890db1eaf9d
+    - https://oddvar.moe/2018/03/21/persistence-using-runonceex-hidden-from-autoruns-exe/
+    mitre_attack:
+    - T1547.001
+    level: medium
+    status: stable
+    false_positives:
+    - Legitimate software automatically (mostly, during installation) sets up autorun
+      keys for legitimate reason
+    - Legitimate administrator sets up autorun keys for legitimate reason
+    tags:
+    - attack.persistence
+    - attack.defense-evasion
+    - windows
+    - registry-modification
+    - autostart-key
+- action: task
+  command: history_dump
+  investigation: asep-registry-modification-investigation
+  suppression:
+    max_count: 1
+    period: 1h
+    is_global: false
+    keys:
+    - '{{ .event.PROCESS_ID }}'
+    - asep-history-dump
+- action: add tag
+  tag: persistence-attempt
+  ttl: 86400

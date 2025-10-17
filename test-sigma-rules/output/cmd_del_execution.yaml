@@ -1,0 +1,84 @@
+detect:
+  event: NEW_PROCESS
+  op: and
+  rules:
+  - op: is windows
+  - op: ends with
+    path: event/FILE_PATH
+    value: \cmd.exe
+    case sensitive: false
+  - op: or
+    rules:
+    - op: contains
+      path: event/COMMAND_LINE
+      value: 'del '
+      case sensitive: false
+    - op: contains
+      path: event/COMMAND_LINE
+      value: 'erase '
+      case sensitive: false
+  - op: or
+    rules:
+    - op: contains
+      path: event/COMMAND_LINE
+      value: ' /f'
+      case sensitive: false
+    - op: contains
+      path: event/COMMAND_LINE
+      value: ' -f'
+      case sensitive: false
+    - op: contains
+      path: event/COMMAND_LINE
+      value: ' /s'
+      case sensitive: false
+    - op: contains
+      path: event/COMMAND_LINE
+      value: ' -s'
+      case sensitive: false
+    - op: contains
+      path: event/COMMAND_LINE
+      value: ' /q'
+      case sensitive: false
+    - op: contains
+      path: event/COMMAND_LINE
+      value: ' -q'
+      case sensitive: false
+respond:
+- action: report
+  name: File Deletion Via Del by {{ .event.USER_NAME }}
+  publish: true
+  priority: 5
+  metadata:
+    author: frack113
+    description: Detects execution of the builtin 'del' or 'erase' commands in order
+      to delete files. Adversaries may delete files left behind by their intrusion
+      activity to minimize their footprint.
+    references:
+    - https://github.com/redcanaryco/atomic-red-team/blob/f339e7da7d05f6057fdfcdd3742bfcf365fee2a9/atomics/T1070.004/T1070.004.md
+    - https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/erase
+    mitre_attack:
+    - T1070.004
+    level: low
+    status: test
+    false_positives:
+    - False positives levels will differ depending on the environment. You can use
+      a combination of ParentImage and other keywords from the CommandLine field to
+      filter legitimate activity.
+    tags:
+    - attack.defense-evasion
+    - attack.t1070.004
+    - windows.process_creation
+    - file.deletion
+- action: task
+  command: history_dump
+  investigation: file-deletion-investigation
+  suppression:
+    max_count: 1
+    period: 1h
+    is_global: false
+    keys:
+    - '{{ .routing.sid }}'
+    - file-deletion-history-dump
+- action: add tag
+  tag: suspicious-file-deletion
+  ttl: 3600
