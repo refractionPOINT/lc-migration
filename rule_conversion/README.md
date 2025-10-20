@@ -83,6 +83,7 @@ The guide covers:
 - **Credential Auto-Detection**: Automatically uses credentials from LimaCharlie CLI or environment variables
 - **AI-Powered Conversion**: Uses LimaCharlie's MCP server tools to intelligently convert rules
 - **Platform-Aware**: Adapts to your specific data source (Okta, CrowdStrike, Windows, etc.)
+- **Parallel Processing**: Convert up to 20 rules concurrently for significantly faster batch processing
 - **Batch Processing**: Convert entire rule libraries at once
 - **Error Resilience**: Continues processing even if some rules fail
 - **Detailed Reporting**: Generates comprehensive reports with success/failure details
@@ -98,6 +99,7 @@ python convert_rules.py \
   --api-key "your-api-key" \
   --platform "okta" \
   --rules-dir "/path/to/rules" \
+  --parallel-workers 20 \
   --skip-confirmation
 ```
 
@@ -108,6 +110,7 @@ python convert_rules.py \
 - `--platform`: Source platform name (e.g., okta, crowdstrike, windows)
 - `--rules-dir`: Directory containing source rules
 - `--output-dir`: Output directory (default: rules-dir/output)
+- `--parallel-workers`: Number of parallel workers (default: 20, min: 1, max: 50)
 - `--skip-confirmation`: Skip the data ingestion confirmation prompt
 - `--endpoint`: MCP server endpoint (default: https://mcp.limacharlie.io/mcp)
 
@@ -204,12 +207,14 @@ rule_conversion/
 
 1. **Tool Discovery**: Connects to LimaCharlie MCP server and discovers available AI tools
 2. **Rule Reading**: Reads all files from your specified rules directory
-3. **AI Conversion**: For each rule:
+3. **AI Conversion**: For each rule (processed in parallel with configurable workers):
    - Sends to `generate_dr_rule_detection` (creates the detection logic)
    - Sends to `generate_dr_rule_respond` (creates the response actions)
 4. **YAML Generation**: Combines detect and respond sections into LimaCharlie D&R format
 5. **Output**: Writes converted rules to output directory with original filenames
 6. **Reporting**: Generates detailed report with success/failure statistics
+
+**Performance**: With parallel processing enabled (default 20 workers), converting 100 rules takes approximately 20x less time compared to sequential processing. For example, 100 rules that take ~2 seconds each will complete in ~20 seconds instead of ~200 seconds.
 
 ## Troubleshooting
 
