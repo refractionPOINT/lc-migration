@@ -8,7 +8,7 @@ using the LimaCharlie MCP server's AI-powered conversion tools.
 
 Author: LimaCharlie
 Version: 1.0.0
-License: MIT
+License: Apache License 2.0
 """
 
 import argparse
